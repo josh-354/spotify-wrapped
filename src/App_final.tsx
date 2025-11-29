@@ -8,6 +8,8 @@ export default function App() {
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState<'medium_term' | 'short_term'>('medium_term')
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false)
 
   useEffect(() => {
     // Check for stored token
@@ -74,6 +76,8 @@ export default function App() {
     setAccessToken(null)
     setIsAuthenticated(false)
     setSpotifyData(null)
+    setUserProfile(null)
+    setShowProfileDropdown(false)
     localStorage.removeItem('spotify_access_token')
     setError(null)
   }
@@ -89,19 +93,24 @@ export default function App() {
     try {
       const headers = { 'Authorization': `Bearer ${accessToken}` }
       
-      const [topTracksRes, topArtistsRes, recentRes] = await Promise.all([
+      const [topTracksRes, topArtistsRes, recentRes, profileRes] = await Promise.all([
         fetch(`https://api.spotify.com/v1/me/top/tracks?time_range=${currentTimeRange}&limit=10`, { headers }),
         fetch(`https://api.spotify.com/v1/me/top/artists?time_range=${currentTimeRange}&limit=10`, { headers }),
-        fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', { headers })
+        fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', { headers }),
+        userProfile ? Promise.resolve({ json: () => userProfile }) : fetch('https://api.spotify.com/v1/me', { headers })
       ])
 
-      const [topTracks, topArtists, recent] = await Promise.all([
+      const [topTracks, topArtists, recent, profile] = await Promise.all([
         topTracksRes.json(),
         topArtistsRes.json(),
-        recentRes.json()
+        recentRes.json(),
+        profileRes.json()
       ])
 
       setSpotifyData({ topTracks, topArtists, recent })
+      if (!userProfile) {
+        setUserProfile(profile)
+      }
     } catch (err) {
       setError('Failed to load data')
     } finally {
@@ -148,7 +157,7 @@ export default function App() {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '30px',
-    padding: '40px',
+    padding: '0px',
     maxWidth: '1200px',
     margin: '0 auto'
   }
@@ -220,25 +229,120 @@ export default function App() {
 
   return (
     <div style={containerStyle}>
-      {/* Header with status indicator */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 40px' }}>
-        <button
-          style={{
-            ...buttonStyle,
-            padding: '8px 16px',
-            fontSize: '12px',
-            borderRadius: '20px'
-          }}
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
-        <div style={{
-          width: '20px',
-          height: '20px',
-          backgroundColor: '#1ed760',
-          borderRadius: '50%'
-        }}></div>
+      {/* Header with profile dropdown */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '5px 16px', position: 'relative' }}>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              borderRadius: '50%',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            {userProfile?.images?.[0]?.url ? (
+              <img 
+                src={userProfile.images[0].url}
+                alt={userProfile.display_name || 'Profile'}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid #1ed760'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#1ed760',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'black',
+                fontWeight: 'bold',
+                fontSize: '16px'
+              }}>
+                {userProfile?.display_name?.[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+          </button>
+
+          {/* Dropdown Menu */}
+          {showProfileDropdown && (
+            <div style={{
+              position: 'absolute',
+              top: '50px',
+              right: '0',
+              backgroundColor: '#3a3a3a',
+              borderRadius: '8px',
+              padding: '15px',
+              minWidth: '200px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+              zIndex: 1000,
+              border: '1px solid #555'
+            }}>
+              {/* Profile Info */}
+              <div style={{
+                marginBottom: '15px',
+                paddingBottom: '15px',
+                borderBottom: '1px solid #555'
+              }}>
+                <div style={{
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  marginBottom: '4px',
+                  color: 'white'
+                }}>
+                  {userProfile?.display_name || 'Spotify User'}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#b3b3b3'
+                }}>
+                  {userProfile?.followers?.total?.toLocaleString() || 0} followers
+                </div>
+                {userProfile?.email && (
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#888',
+                    marginTop: '2px'
+                  }}>
+                    {userProfile.email}
+                  </div>
+                )}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#ff4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '10px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ff2222'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff4444'}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {!spotifyData && !dataLoading && (
@@ -274,7 +378,7 @@ export default function App() {
             display: 'flex', 
             justifyContent: 'center', 
             gap: '15px', 
-            marginBottom: '30px',
+            marginBottom: '5px',
             paddingTop: '20px' 
           }}>
             <button
