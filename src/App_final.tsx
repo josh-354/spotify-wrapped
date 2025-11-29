@@ -7,6 +7,7 @@ export default function App() {
   const [spotifyData, setSpotifyData] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [timeRange, setTimeRange] = useState<'medium_term' | 'short_term'>('medium_term')
 
   useEffect(() => {
     // Check for stored token
@@ -77,8 +78,10 @@ export default function App() {
     setError(null)
   }
 
-  const loadData = async () => {
+  const loadData = async (selectedTimeRange?: 'medium_term' | 'short_term') => {
     if (!accessToken) return
+    
+    const currentTimeRange = selectedTimeRange || timeRange
     
     setDataLoading(true)
     setError(null)
@@ -87,9 +90,9 @@ export default function App() {
       const headers = { 'Authorization': `Bearer ${accessToken}` }
       
       const [topTracksRes, topArtistsRes, recentRes] = await Promise.all([
-        fetch('https://api.spotify.com/v1/me/top/tracks?time_range=medium_term&limit=3', { headers }),
-        fetch('https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=3', { headers }),
-        fetch('https://api.spotify.com/v1/me/player/recently-played?limit=3', { headers })
+        fetch(`https://api.spotify.com/v1/me/top/tracks?time_range=${currentTimeRange}&limit=10`, { headers }),
+        fetch(`https://api.spotify.com/v1/me/top/artists?time_range=${currentTimeRange}&limit=10`, { headers }),
+        fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', { headers })
       ])
 
       const [topTracks, topArtists, recent] = await Promise.all([
@@ -103,6 +106,13 @@ export default function App() {
       setError('Failed to load data')
     } finally {
       setDataLoading(false)
+    }
+  }
+
+  const handleTimeRangeChange = (newTimeRange: 'medium_term' | 'short_term') => {
+    setTimeRange(newTimeRange)
+    if (spotifyData) {
+      loadData(newTimeRange)
     }
   }
 
@@ -147,7 +157,7 @@ export default function App() {
     backgroundColor: '#3a3a3a',
     borderRadius: '12px',
     padding: '20px',
-    minHeight: '300px'
+    minHeight: '600px'
   }
 
   const titleStyle = {
@@ -162,11 +172,11 @@ export default function App() {
   const itemStyle = {
     backgroundColor: '#1a1a1a',
     borderRadius: '8px',
-    padding: '15px',
-    marginBottom: '10px',
+    padding: '12px',
+    marginBottom: '8px',
     display: 'flex',
     alignItems: 'center',
-    gap: '15px'
+    gap: '12px'
   }
 
   if (loading) {
@@ -258,15 +268,80 @@ export default function App() {
       )}
 
       {spotifyData && (
-        <div style={dashboardStyle}>
-          {/* Top Tracks */}
+        <div>
+          {/* Time Range Filter Buttons */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '15px', 
+            marginBottom: '30px',
+            paddingTop: '20px' 
+          }}>
+            <button
+              style={{
+                ...buttonStyle,
+                backgroundColor: timeRange === 'medium_term' ? '#1ed760' : '#3a3a3a',
+                color: timeRange === 'medium_term' ? 'black' : '#b3b3b3',
+                padding: '10px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                borderRadius: '25px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => handleTimeRangeChange('medium_term')}
+              disabled={dataLoading}
+            >
+              Last 6 Months
+            </button>
+            <button
+              style={{
+                ...buttonStyle,
+                backgroundColor: timeRange === 'short_term' ? '#1ed760' : '#3a3a3a',
+                color: timeRange === 'short_term' ? 'black' : '#b3b3b3',
+                padding: '10px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                borderRadius: '25px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => handleTimeRangeChange('short_term')}
+              disabled={dataLoading}
+            >
+              Last 4 Weeks
+            </button>
+          </div>
+
+          {dataLoading && (
+            <div style={centerStyle}>
+              <div style={{ color: '#b3b3b3', fontSize: '16px' }}>
+                Loading {timeRange === 'medium_term' ? '6 months' : '4 weeks'} data...
+              </div>
+            </div>
+          )}
+
+          <div style={dashboardStyle}>
+            {/* Top Tracks */}
           <div style={sectionStyle}>
             <h2 style={titleStyle}>TOP TRACKS</h2>
-            {spotifyData.topTracks.items?.slice(0, 3).map((track: any, index: number) => (
+            {spotifyData.topTracks.items?.slice(0, 10).map((track: any, index: number) => (
               <div key={track.id} style={itemStyle}>
                 <span style={{ color: '#b3b3b3', fontWeight: '600', minWidth: '20px' }}>
                   {index + 1}
                 </span>
+                <img 
+                  src={track.album.images[2]?.url || track.album.images[1]?.url || track.album.images[0]?.url} 
+                  alt={track.album.name}
+                  style={{ 
+                    width: '48px', 
+                    height: '48px', 
+                    borderRadius: '4px',
+                    objectFit: 'cover'
+                  }}
+                />
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   <div style={{ fontWeight: '600', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {track.name}
@@ -282,11 +357,21 @@ export default function App() {
           {/* Top Artists */}
           <div style={sectionStyle}>
             <h2 style={titleStyle}>TOP ARTIST</h2>
-            {spotifyData.topArtists.items?.slice(0, 3).map((artist: any, index: number) => (
+            {spotifyData.topArtists.items?.slice(0, 10).map((artist: any, index: number) => (
               <div key={artist.id} style={itemStyle}>
                 <span style={{ color: '#b3b3b3', fontWeight: '600', minWidth: '20px' }}>
                   {index + 1}
                 </span>
+                <img 
+                  src={artist.images[2]?.url || artist.images[1]?.url || artist.images[0]?.url} 
+                  alt={artist.name}
+                  style={{ 
+                    width: '48px', 
+                    height: '48px', 
+                    borderRadius: '50%',
+                    objectFit: 'cover'
+                  }}
+                />
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   <div style={{ fontWeight: '600', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {artist.name}
@@ -302,11 +387,21 @@ export default function App() {
           {/* Recently Played */}
           <div style={sectionStyle}>
             <h2 style={titleStyle}>RECENTLY PLAYED</h2>
-            {spotifyData.recent.items?.slice(0, 3).map((item: any, index: number) => (
+            {spotifyData.recent.items?.slice(0, 10).map((item: any, index: number) => (
               <div key={`${item.track.id}-${item.played_at}`} style={itemStyle}>
                 <span style={{ color: '#b3b3b3', fontWeight: '600', minWidth: '20px' }}>
                   {index + 1}
                 </span>
+                <img 
+                  src={item.track.album.images[2]?.url || item.track.album.images[1]?.url || item.track.album.images[0]?.url} 
+                  alt={item.track.album.name}
+                  style={{ 
+                    width: '48px', 
+                    height: '48px', 
+                    borderRadius: '4px',
+                    objectFit: 'cover'
+                  }}
+                />
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   <div style={{ fontWeight: '600', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {item.track.name}
@@ -318,6 +413,7 @@ export default function App() {
               </div>
             ))}
           </div>
+        </div>
         </div>
       )}
     </div>
