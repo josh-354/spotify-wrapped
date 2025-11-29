@@ -4,6 +4,10 @@ A sleek React TypeScript application that displays your personalized Spotify lis
 
 ![Spotify Dashboard](https://img.shields.io/badge/React-19.2.0-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue) ![Vite](https://img.shields.io/badge/Vite-7.2.4-purple) ![Spotify API](https://img.shields.io/badge/Spotify-Web%20API-green)
 
+## 🎬 Demo
+
+![Spotify Dashboard Demo](demo.gif)
+
 ## ✨ Features
 
 ### 📊 **Dashboard Sections**
