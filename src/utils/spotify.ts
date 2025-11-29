@@ -1,6 +1,6 @@
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
-const REDIRECT_URI = 'http://127.0.0.1:5191/';
+const REDIRECT_URI = 'http://127.0.0.1:5192/';
 
 const SCOPES = [
   'user-read-private',
