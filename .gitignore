@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.acli.
+
+# Environment variables - contains sensitive API keys
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Keep example file for setup instructions
+!.env.example

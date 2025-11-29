@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# 🎵 My Spotify Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React TypeScript application that displays your Spotify listening data including top tracks, top artists, and recently played songs.
 
-Currently, two official plugins are available:
+## ⚠️ Security Notice
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**IMPORTANT**: This project requires Spotify API credentials that must be kept secure.
 
-## React Compiler
+### 🔐 Environment Variables Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Copy the example file**:
+   ```bash
+   cp .env.example .env
+   ```
 
-## Expanding the ESLint configuration
+2. **Add your Spotify credentials to `.env`**:
+   ```
+   VITE_CLIENT_ID=your_spotify_client_id_here
+   VITE_CLIENT_SECRET=your_spotify_client_secret_here
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. **Never commit your `.env` file** - it's already in `.gitignore`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🎯 Getting Spotify API Credentials
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Create a new app
+3. Note down your Client ID and Client Secret
+4. Add redirect URI: `http://127.0.0.1:5192/`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Installation & Setup
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. **Set up environment variables** (see Security Notice above)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Open your browser** and go to `http://127.0.0.1:5192/`
+
+## 🎨 Features
+
+- **Spotify OAuth Authentication**
+- **Top Tracks** - Your most listened songs  
+- **Top Artists** - Your favorite artists
+- **Recently Played** - Your recent listening history
+- **Dark Theme** - Clean, modern design matching Spotify
+- **Responsive Layout** - Works on desktop and mobile
+
+## 🛠️ Tech Stack
+
+- React 19
+- TypeScript  
+- Vite
+- Spotify Web API
+
+## 📝 Usage
+
+1. Click "Login with Spotify"
+2. Grant permissions to the app
+3. Click "Load My Music Data"  
+4. View your personalized dashboard!
+
+## 🔒 Security Notes
+
+- ✅ API credentials loaded from environment variables
+- ✅ `.env` file is gitignored
+- ✅ No hardcoded secrets in source code
+- ⚠️ Frontend-only implementation (client secret still exposed to browser)
+
+## 📖 Future Improvements
+
+- Implement backend server for secure token handling
+- Add more time range options
+- Add playlist management
+- Add currently playing track
+- Add music controls
+
+## 📄 License
+
+MIT License
